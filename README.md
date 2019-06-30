@@ -1,6 +1,6 @@
 ## MailHostBox
 
-Module to manage free email for LogicBoxes registrar (ResellerClub, Resell.biz, Rezistro, NetEarthOne, ResellerCamp, ResellerID)
+WHMCS module to manage free email for LogicBoxes registrars (ResellerClub, Resell.biz, Rezistro, NetEarthOne, ResellerCamp, ResellerID)
 
 
 ## Server & WHMCS
