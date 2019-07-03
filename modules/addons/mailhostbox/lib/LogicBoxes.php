@@ -6,13 +6,13 @@
  * Email        : absiddique.live@gmail.com
  * Company      : Tunnel Conflux
  * Website      : http://www.tunnelconflux.com
- * Date[D/M/Y]  : 2016/11/22 6:42 PM
+ * Date[D/M/Y]  : 2016/11/22 6:46 PM
  */
 
-class OrderBox
+class LogicBoxes
 {
-    const API_BASE_URL      = 'https://httpapi.com/api/';
-    const TEST_API_BASE_URL = 'https://test.httpapi.com/api/';
+    const API_BASE_URL = 'https://httpapi.com/api/';
+    const API_TEST_URL = 'https://test.httpapi.com/api/';
 
     private $apiBaseUrl = '';
     private $resellerId = null;
@@ -22,7 +22,7 @@ class OrderBox
 
     public function __construct($resellerId, $apiKey, $test = false, $url = '', $log = true, $profiler = 'mailhostbox-email')
     {
-        $this->apiBaseUrl = !empty($url) ? $url : ($test ? self::TEST_API_BASE_URL : self::API_BASE_URL);
+        $this->apiBaseUrl = !empty($url) ? $url : ($test ? self::API_TEST_URL : self::API_BASE_URL);
         $this->resellerId = $resellerId;
         $this->apiKey     = $apiKey;
         $this->params     = [

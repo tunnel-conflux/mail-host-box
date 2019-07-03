@@ -12,6 +12,16 @@
         <form method="post" class="form-horizontal"
               action="index.php?m={$smarty.get.m}&action={$smarty.get.action}&domainid={$smarty.get.domainid}">
             <div class="box-body">
+                {*<div class="form-group">
+                    <label for="language" class="col-sm-3 control-label">Email type</label>
+
+                    <div class="col-sm-9">
+                        <select id="email-type" name="email-type" class="form-control">
+                            <option selected="selected" value="mail">Email Account</option>
+                            <option value="mail">Forward only</option>
+                        </select>
+                    </div>
+                </div>*}
                 <div class="form-group">
                     <label for="first-name" class="col-sm-3 control-label">First name</label>
 
@@ -54,6 +64,13 @@
                         </div>
                     </div>
                 </div>
+                {*<div class="form-group">
+                    <label for=confirm-password" class="col-sm-3 control-label">Confirm Password</label>
+
+                    <div class="col-sm-9">
+                        <input type="password" class="form-control" id="confirm-password" placeholder="Confirm Password">
+                    </div>
+                </div>*}
                 <div class="form-group">
                     <label for="alternative-email" class="col-sm-3 control-label">Alternative Email</label>
 
@@ -388,6 +405,7 @@
     <h3>Account Details</h3>
     <div class="col-md-12">
         {if $emails->response->status == "SUCCESS"}
+            {assign var=mail value=$emails->response->user}
             <table class="table table-striped table-bordered table-responsive table-hover">
                 <thead>
                 <tr>
@@ -395,29 +413,25 @@
                 </tr>
                 </thead>
                 <tbody>
-                {if $emails->response->user->accountType == "FORWARD_ONLY"}
+                {if $mail->accountType == "FORWARD_ONLY"}
                     <tr>
                         <td>Forward to</td>
-                        <td>{$emails->response->user->adminForwards}</td>
-                    </tr>
-                    <tr>
-                        <td>Quota</td>
-                        <td>{$emails->response->user->quotaLimit}</td>
+                        <td>{$mail->adminForwards}</td>
                     </tr>
                 {else}
                     <tr>
                         <td>Name</td>
-                        <td>{$emails->response->user->firstName} {$emails->response->user->lastName}</td>
+                        <td>{$mail->firstName} {$mail->lastName}</td>
                     </tr>
                     <tr>
                         <td>Alternate Email</td>
-                        <td>{$emails->response->user->alternateEmailAddress}</td>
+                        <td>{$mail->alternateEmailAddress}</td>
                     </tr>
                     <tr>
                         <td>POP URL</td>
                         <td>
-                            {$emails->response->user->accountSettings->popSettings}
-                            {if $emails->response->user->popAccessEnabled}
+                            {$mail->accountSettings->popSettings}
+                            {if $mail->popAccessEnabled}
                                 <span class="label label-success">Active</span>
                             {else}
                                 <span class="label label-danger">Inactive</span>
@@ -427,8 +441,8 @@
                     <tr>
                         <td>IMAP URL</td>
                         <td>
-                            {$emails->response->user->accountSettings->imapSettings}
-                            {if $emails->response->user->imapAccessEnabled}
+                            {$mail->accountSettings->imapSettings}
+                            {if $mail->imapAccessEnabled}
                                 <span class="label label-success">Active</span>
                             {else}
                                 <span class="label label-danger">Inactive</span>
@@ -437,15 +451,15 @@
                     </tr>
                     <tr>
                         <td>SMTP URL</td>
-                        <td>{$emails->response->user->accountSettings->smtpSettings}</td>
+                        <td>{$mail->accountSettings->smtpSettings}</td>
                     </tr>
                     <tr>
                         <td>Webmail URL</td>
                         <td>
-                            <a target="_blank" href="{$emails->response->user->accountSettings->webmailUrl}">
-                                {$emails->response->user->accountSettings->webmailUrl}
+                            <a target="_blank" href="{$mail->accountSettings->webmailUrl}">
+                                {$mail->accountSettings->webmailUrl}
                             </a>
-                            {if $emails->response->user->webmailAccessEnabled}
+                            {if $mail->webmailAccessEnabled}
                                 <span class="label label-success">Active</span>
                             {else}
                                 <span class="label label-danger">Inactive</span>
@@ -454,20 +468,24 @@
                     </tr>
                 {/if}
                 <tr>
+                    <td>Quota</td>
+                    <td>{$mail->percentageQuotaUsage}% of {($mail->quotaLimit/1024)} MB</td>
+                </tr>
+                <tr>
                     <td>Status</td>
                     <td>
-                        {if strtolower($emails->response->user->status) === "active"}
+                        {if $mail->status == "ACTIVE"}
                             <span class="label label-success">Active</span>
-                        {elseif strtolower($emails->response->user->status) === "suspended"}
+                        {elseif $mail->status == "SUSPENDED"}
                             <span class="label label-danger">Suspended</span>
-                        {elseif strtolower($emails->response->user->status) === "pending_activation"}
+                        {elseif $mail->status == "PENDING_ACTIVATION"}
                             <span class="label label-warning">Inactive</span>
                         {/if}
                     </td>
                 </tr>
                 <tr>
                     <td>Created On</td>
-                    <td>{date('M d, Y', strtotime($emails->response->user->createdOn))}</td>
+                    <td>{date('M d, Y', strtotime($mail->createdOn))}</td>
                 </tr>
                 <tr>
                     <td>Action</td>
@@ -479,6 +497,10 @@
                                    class="btn btn-sm btn-primary" title="Back">
                                     <i class="fas fa fa-arrow-alt-left"></i>
                                 </a>
+                                {*<a href="index.php?m={$smarty.get.m}&action=edit-accounts&domainid={$smarty.get.domainid}"
+                                   class="btn btn-sm btn-primary" title="Edit">
+                                    <i class="fas fa fa-edit"></i>
+                                </a>*}
                                 <button class="btn btn-sm btn-primary">
                                     <i class="fas fa fa-trash"></i>
                                 </button>
@@ -534,20 +556,15 @@
                             </td>
                             <td>
                                 {if $user->accountType == "FORWARD_ONLY"}
-                                    Forward Only
-                                {elseif $user->accountType == "POP_WITHOUT_AUTORESPONDER"}
-                                    Without Autoresponder
+                                    Forwarder
                                 {else}
-                                    Email Account
+                                    Email
                                 {/if}
                             </td>
                             <td>
-                                {if $user->accountType == "FORWARD_ONLY"}
-                                    {$user->quotaLimit}
-                                {else}
-                                    {$user->percentageQuotaUsage}
-                                {/if}
-
+                                <span class="label label-primary">
+                                    {$user->percentageQuotaUsage}% of {($user->quotaLimit/1024)} MB
+                                </span>
                             </td>
                             <td>
                                 {if $user->status == "ACTIVE"}
@@ -567,6 +584,9 @@
                                            class="btn btn-sm btn-primary" title="View Detail">
                                             <i class="fas fa fa-eye"></i>
                                         </a>
+                                        {*<a href="index.php?m={$smarty.get.m}&action=edit-accounts&domainid={$smarty.get.domainid}&email={$user->emailAddress}" class="btn btn-sm btn-primary" title="Edit">
+                                            <i class="fa fa-edit"></i>
+                                        </a>*}
                                         <button class="btn btn-sm btn-primary">
                                             <i class="fas fa fa-trash"></i>
                                         </button>
@@ -581,7 +601,7 @@
                 <div class="alert alert-info">No E-mail accounts found !</div>
             {/if}
         </div>
-    {elseif $emails->message === "You need to activate your FREE Email Services before you can perform this action"}
+    {elseif $emails->message == "You need to activate your FREE Email Services before you can perform this action"}
         <div class="alert alert-warning">{$emails->message}</div>
     {else}
         <div class="alert alert-danger">{$emails->message}</div>

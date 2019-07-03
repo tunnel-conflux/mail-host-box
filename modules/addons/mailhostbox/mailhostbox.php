@@ -9,9 +9,9 @@
  * Date[D/M/Y]  : 2016/11/22 6:59 PM
  */
 
-require_once dirname(__FILE__) . DS . "lib/helper.php";
-require_once dirname(__FILE__) . DS . "lib/OrderBox.php";
-require_once dirname(__FILE__) . DS . "hook.php";
+require_once dirname(__FILE__) . "/lib/helper.php";
+require_once dirname(__FILE__) . "/lib/LogicBoxes.php";
+require_once dirname(__FILE__) . "/hook.php";
 
 use WHMCS\Database\Capsule as DB;
 
@@ -96,23 +96,23 @@ function mailhostbox_clientarea()
         redirectInLogin();
     }
 
-    $orderId           = 0;
-    $emails            = null;
-    $currentDomainData = getDomainLocalData();
-    $currentDomain     = $currentDomainData->domainname;
-    $registrar         = getRegistrar($currentDomainData->registrar);
+    $orderId    = 0;
+    $emails     = null;
+    $domainInfo = getDomainLocalData();
+    $domainName = $domainInfo->domainname;
+    $registrar  = getRegistrar($domainInfo->registrar);
 
-    if (!moduleActive($currentDomainData->registrar) || empty($registrar)) {
+    if (!moduleActive($domainInfo->registrar) || empty($registrar)) {
         redirectTo("clientarea.php", ["action" => "domains"]);
     }
 
-    if (empty($currentDomainData) || $currentDomainData->emailforwarding != 1) {
+    if (empty($domainInfo) || $domainInfo->emailforwarding != 1) {
         redirectInLogin();
     }
 
     if (getUrlValue("m") == 'mailhostbox') {
-        $tunnel  = new OrderBox($registrar["ResellerID"], $registrar["APIKey"], ($registrar["TestMode"]) == "on" ?: false);
-        $orderId = $tunnel->apiRequest('domains/orderid.json', 'GET', ['domain-name' => $currentDomain]);
+        $tunnel  = new LogicBoxes($registrar["ResellerID"], $registrar["APIKey"], ($registrar["TestMode"] == "on") ?: false);
+        $orderId = $tunnel->apiRequest('domains/orderid.json', 'GET', ['domain-name' => $domainName]);
 
         if (getUrlValue("email")) {
             $emails = $tunnel->apiRequest('mail/user.json', 'GET', [
@@ -140,7 +140,7 @@ function mailhostbox_clientarea()
         ];
 
         if ($postAction == "new-email") {
-            $tempEmail = strtolower($_POST['email-username'] . "@$currentDomain");
+            $tempEmail = strtolower($_POST['email-username'] . "@$domainName");
             $emails    = $tunnel->apiRequest('mail/user/add.json', 'POST', [
                 'order-id'           => trim($orderId),
                 'email'              => trim($tempEmail),
@@ -152,14 +152,14 @@ function mailhostbox_clientarea()
                 'notification-email' => trim($_POST['alternative-email']),
             ]);
         } elseif ($postAction == "forwarder") {
-            $tempEmail = strtolower($_POST['email-username'] . "@$currentDomain");
+            $tempEmail = strtolower($_POST['email-username'] . "@$domainName");
             $emails    = $tunnel->apiRequest('mail/user/add-forward-only-account.json', 'POST', [
                 'order-id' => trim($orderId),
                 'email'    => trim($tempEmail),
                 'forwards' => trim(str_replace(["[", "]", "(", ")", " "], "", trim($_POST['forward-to'])), ','),
             ]);
         } elseif ($postAction == "delete-account") {
-            $tempEmail = strtolower($_POST['email-username'] . "@$currentDomain");
+            $tempEmail = strtolower($_POST['email-username'] . "@$domainName");
             $emails    = $tunnel->apiRequest('mail/user/delete.json', 'POST', [
                 'order-id' => trim($orderId),
                 'email'    => trim($_REQUEST['email']),
@@ -178,7 +178,7 @@ function mailhostbox_clientarea()
         'breadcrumb'   => [
             "clientarea.php"                                     => "Client Area",
             "clientarea.php?action=domains"                      => "My Domains",
-            "clientarea.php?action=domaindetails&id={$domainId}" => $currentDomain,
+            "clientarea.php?action=domaindetails&id={$domainId}" => $domainName,
             'index.php?m=mailhostbox'                            => 'Email Accounts',
         ],
         'templatefile' => 'mailhostbox',
@@ -186,7 +186,7 @@ function mailhostbox_clientarea()
         'forcessl'     => false, # accepts true/false
         'vars'         => [
             'emails' => $emails,
-            'domain' => $currentDomain,
+            'domain' => $domainName,
         ],
     ];
 
@@ -198,12 +198,12 @@ function mailhostbox_mailbox($params)
 }
 
 /**
- * @param \OrderBox $tunnel
- * @param int       $orderId
+ * @param \LogicBoxes $tunnel
+ * @param int         $orderId
  *
  * @return string
  */
-function getEmails(OrderBox $tunnel, $orderId)
+function getEmails(LogicBoxes $tunnel, $orderId)
 {
     return $tunnel->apiRequest('mail/users/search.json', 'GET', ['order-id' => $orderId]);
 }

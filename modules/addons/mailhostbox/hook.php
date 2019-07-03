@@ -67,7 +67,6 @@ add_hook('ClientAreaPrimarySidebar', 1, function ($primarySidebar) {
             ->setLabel(Lang::trans("domaingeteppcode"))
             ->setUri("clientarea.php?action=domaingetepp&domainid={$domainId}")
             ->setOrder(100);
-        //}
     }
 });
 

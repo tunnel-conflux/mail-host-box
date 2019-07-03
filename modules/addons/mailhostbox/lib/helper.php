@@ -46,7 +46,7 @@ function getData($url)
     return curl_exec($ch);
 }
 
-function getDomainInfoFromResponse($data): object
+function getDomainInfoFromResponse($data)
 {
     return (object)$data["domains"]["domain"][0] ?? null;
 }
@@ -80,7 +80,7 @@ function getRegistrar($registrar)
     return $data;
 }
 
-function decryptText($text)
+function decryptText($text): string
 {
     $data = localAPI('DecryptPassword', [
         'password2' => $text,
@@ -89,11 +89,11 @@ function decryptText($text)
     return $data["password"] ?? null;
 }
 
-function encryptText($text)
+function encryptText($text): string
 {
     $data = localAPI('EncryptPassword', [
         'password2' => $text,
     ]);
 
-    return $data;
+    return $data["password"] ?? null;
 }
