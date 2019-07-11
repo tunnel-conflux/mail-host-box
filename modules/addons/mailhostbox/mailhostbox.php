@@ -9,11 +9,10 @@
  * Date[D/M/Y]  : 2016/11/22 6:59 PM
  */
 
-require_once dirname(__FILE__) . "/lib/helper.php";
-require_once dirname(__FILE__) . "/lib/LogicBoxes.php";
-require_once dirname(__FILE__) . "/hook.php";
+include_once __DIR__ . "/hook.php";
 
 use WHMCS\Database\Capsule as DB;
+use TunnelConflux\MailHostBox\Core\LogicBoxes;
 
 function mailhostbox_config()
 {
@@ -198,7 +197,7 @@ function mailhostbox_mailbox($params)
 }
 
 /**
- * @param \LogicBoxes $tunnel
+ * @param LogicBoxes $tunnel
  * @param int         $orderId
  *
  * @return string

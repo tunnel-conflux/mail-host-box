@@ -9,6 +9,8 @@
  * Date[D/M/Y]  : 2016/11/22 6:49 PM
  */
 
+include_once __DIR__ . "/autoload.php";
+
 /**
  * @param \WHMCS\View\Menu\Item $primarySidebar
  */

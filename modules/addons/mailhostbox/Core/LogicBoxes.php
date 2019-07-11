@@ -9,6 +9,8 @@
  * Date[D/M/Y]  : 2016/11/22 6:46 PM
  */
 
+namespace TunnelConflux\MailHostBox\Core;
+
 class LogicBoxes
 {
     const API_BASE_URL = 'https://httpapi.com/api/';

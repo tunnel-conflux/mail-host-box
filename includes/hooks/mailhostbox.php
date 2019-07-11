@@ -19,6 +19,5 @@ $action = strtolower($_GET['action']);
 $pages  = ['domaindetails', 'domaincontacts', 'domainregisterns', 'domaindns', 'domaingetepp'];
 
 if ($_SESSION['uid'] && in_array($action, $pages)) {
-    require_once __DIR__ . "/../../modules/addons/mailhostbox/lib/helper.php";
-    require_once __DIR__ . "/../../modules/addons/mailhostbox/hook.php";
+    include_once __DIR__ . "/../../modules/addons/mailhostbox/hook.php";
 }
